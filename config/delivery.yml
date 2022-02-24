@@ -13,8 +13,19 @@ spec:
   template:
     metadata:
       annotations:
-        conventions.apps.tanzu.vmware.com/applied-conventions: ""
+        boot.spring.io/actuator: http://:8080/actuator
+        boot.spring.io/version: 2.5.4
+        conventions.apps.tanzu.vmware.com/applied-conventions: |-
+          appliveview-sample/app-live-view-connector
+          appliveview-sample/app-live-view-appflavours
+          appliveview-sample/app-live-view-systemproperties
+          spring-boot-convention/spring-boot
+          spring-boot-convention/spring-boot-graceful-shutdown
+          spring-boot-convention/spring-boot-web
+          spring-boot-convention/spring-boot-actuator
+          spring-boot-convention/service-intent-mysql
         developer.conventions/target-containers: workload
+        services.conventions.apps.tanzu.vmware.com/mysql: mysql-connector-java/8.0.26
       labels:
         app.kubernetes.io/component: run
         app.kubernetes.io/part-of: petclinic-server
@@ -22,6 +33,11 @@ spec:
         apps.tanzu.vmware.com/has-tests: "true"
         apps.tanzu.vmware.com/workload-type: web
         carto.run/workload-name: spring-petclinic
+        conventions.apps.tanzu.vmware.com/framework: spring-boot
+        services.conventions.apps.tanzu.vmware.com/mysql: workload
+        tanzu.app.live.view: "true"
+        tanzu.app.live.view.application.flavours: spring-boot
+        tanzu.app.live.view.application.name: petclinic
     spec:
       containers:
       - env:
@@ -30,9 +46,12 @@ spec:
         - name: JAVA_TOOL_OPTIONS
           value: |-
             -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9005
-             -Dspring.devtools.restart.enabled="true" -Dspring.devtools.restart.poll-interval="2s" -Dspring.devtools.restart.quiet-period="1s"
-        image: dev.registry.tanzu.vmware.com/tanzu-advanced-edition/msrinivasssa/apps/spring-petclinic-my-apps@sha256:c513f292d0f4d6923b8e2cebf25bab9a26aa48293b1832ad9b8e113e31bba2b7
+             -Dmanagement.endpoint.health.show-details="always" -Dmanagement.endpoints.web.base-path="/actuator" -Dmanagement.endpoints.web.exposure.include="*" -Dmanagement.server.port="8080" -Dserver.port="8080" -Dserver.shutdown.grace-period="24s" -Dspring.devtools.restart.enabled="true" -Dspring.devtools.restart.poll-interval="2s" -Dspring.devtools.restart.quiet-period="1s"
+        image: dev.registry.tanzu.vmware.com/tanzu-advanced-edition/msrinivasssa/apps/spring-petclinic-my-apps@sha256:3692cd8c72dbe8972b67051060db51b07d649204c800d7c987f0891046f7bae1
         name: workload
+        ports:
+        - containerPort: 8080
+          protocol: TCP
         resources:
           limits:
             cpu: "4"
